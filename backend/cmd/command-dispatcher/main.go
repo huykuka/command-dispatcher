@@ -1,0 +1,26 @@
+package main
+
+import (
+	"command-dispatcher/internal/config"
+	"command-dispatcher/internal/routes"
+	"command-dispatcher/internal/subcribers"
+	"fmt"
+	"sync"
+)
+
+func main() {
+	config.Init()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		defer wg.Done()
+		routes.Init()
+		fmt.Print("Server is running...")
+		subcribers.Init()
+	}()
+
+	wg.Wait()
+
+}

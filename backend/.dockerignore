@@ -1,0 +1,33 @@
+# Ignore the entire vendor folder
+vendor/
+
+# Ignore binary files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Ignore build output directories
+bin/
+out/
+
+# Ignore Go test binaries
+*.test
+
+# Ignore common files and directories
+node_modules/
+npm-debug.log
+yarn-error.log
+.DS_Store
+.git
+.gitignore
+.dockerignore
+.env
+Dockerfile
+LICENSE
+README.md
+.next
+cache
+pgdata
+secrets

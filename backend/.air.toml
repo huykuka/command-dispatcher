@@ -1,0 +1,22 @@
+# Config file for air
+
+
+[build]
+  cmd = "go build -o  ./tmp/main ./cmd/command-dispatcher/main.go"
+  bin = "./tmp/main"
+  include_ext = ["go", "tpl", "html"]
+  exclude_ext = ["db"]
+  exclude_dir = ["assets", "tmp", "vendor"]
+  exclude_file = ["*_test.go","app.db"]
+  delay = 1
+  stop_on_error = true
+
+[log]
+  level = "debug"
+  color = true
+  timestamp = "2006-01-02 15:04:05"
+
+
+#[misc]
+## Delete tmp directory on exit
+#clean_on_exit = true
