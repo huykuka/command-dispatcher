@@ -4,7 +4,6 @@ import (
 	"command-dispatcher/internal/config"
 	"command-dispatcher/internal/routes"
 	"command-dispatcher/internal/subcribers"
-	"fmt"
 	"sync"
 )
 
@@ -12,12 +11,15 @@ func main() {
 	config.Init()
 
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(2)
 
 	go func() {
 		defer wg.Done()
 		routes.Init()
-		fmt.Print("Server is running...")
+	}()
+
+	go func() {
+		defer wg.Done()
 		subcribers.Init()
 	}()
 

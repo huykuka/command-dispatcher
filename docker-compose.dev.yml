@@ -46,7 +46,7 @@ services:
           path: backend/docker/dev/Dockerfile
     restart: unless-stopped
     environment:
-      - ENV=container-dev
+      - ENV=dev
       - PORT=${APP_PORT:-3000}
       - HASH_JWT_KEY=9989258716
     ports:
