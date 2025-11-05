@@ -85,8 +85,6 @@ func (m *MQTTClient) Publish(topic string, qos byte, retained bool, payload any)
 		log.Printf("Failed to publish to topic %s: %v", topic, token.Error())
 		return token.Error()
 	}
-
-	log.Printf("Published to topic %s: %v", topic, payload)
 	return nil
 }
 

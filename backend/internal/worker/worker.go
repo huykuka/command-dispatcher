@@ -13,13 +13,15 @@ const (
 	TypeCommandExecutionJob = "command:execute"
 )
 
+// commandWorker implements TaskWorker (compile-time assertion)
+var commandWorker TaskWorker = NewCommandWorker(TypeCommandExecutionJob)
+
 // Init starts the asynq server and registers all domain worker handlers.
 func Init() {
 	srv := _queue.GetQueueServer()
 	mux := asynq.NewServeMux()
 
-	commandWorker := NewCommandWorker(TypeCommandExecutionJob)
-	mux.HandleFunc(TypeCommandExecutionJob, commandWorker.Process)
+	mux.HandleFunc(commandWorker.JobName(), commandWorker.Process)
 
 	log.Info("Worker server starting...")
 	if err := srv.Run(mux); err != nil {
@@ -37,15 +39,11 @@ func EnqueueTask(task *asynq.Task) error {
 	return nil
 }
 
-// EnqueueCommandExecutionTask is a convenience wrapper: generate then enqueue.
+// EnqueueCommandExecutionTask generates and enqueues a command execution task using the singleton worker.
 func EnqueueCommandExecutionTask(dto models.CommandCreateDTO) error {
-	cw := NewCommandWorker(TypeCommandExecutionJob)
-	t, err := cw.Generate(dto)
+	t, err := commandWorker.Generate(dto)
 	if err != nil {
 		return err
 	}
-	if err := EnqueueTask(t); err != nil {
-		return err
-	}
-	return nil
+	return EnqueueTask(t)
 }
