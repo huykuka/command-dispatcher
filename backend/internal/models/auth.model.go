@@ -1,4 +1,4 @@
-package auth
+package models
 
 type LoginDTO struct {
 	Email    string `json:"email" validate:"required"`

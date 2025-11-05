@@ -1,4 +1,4 @@
-package users
+package models
 
 type CreateUserDTO struct {
 	Name  string `json:"name" validate:"required,min=3,max=100"`

@@ -2,6 +2,7 @@ package auth
 
 import (
 	jwttoken "command-dispatcher/internal/core/services/jwt-token"
+	"command-dispatcher/internal/models"
 	"command-dispatcher/internal/utils"
 	"net/http"
 
@@ -14,7 +15,7 @@ var authRepository = new(AuthRepository)
 var jwtService = jwttoken.NewJWTService()
 
 func (a *AuthService) Login(c *gin.Context) {
-	dto := c.MustGet("Body").(LoginDTO)
+	dto := c.MustGet("Body").(models.LoginDTO)
 	user, err := authRepository.Login(&dto)
 
 	if err != nil {

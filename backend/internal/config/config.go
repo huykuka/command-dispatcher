@@ -2,6 +2,7 @@ package config
 
 import (
 	"command-dispatcher/internal/config/_mqtt"
+	"command-dispatcher/internal/config/_queue"
 	"command-dispatcher/internal/config/environments"
 	"command-dispatcher/internal/config/log"
 	"crypto/rand"
@@ -20,4 +21,5 @@ func Init() {
 	log.Init()
 	environments.Init()
 	_mqtt.Init(mqttCfg)
+	_queue.Init()
 }

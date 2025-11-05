@@ -4,6 +4,7 @@ import (
 	"command-dispatcher/internal/core/interceptors"
 	"command-dispatcher/internal/core/middlewares"
 	"command-dispatcher/internal/routes/auth"
+	"command-dispatcher/internal/routes/command"
 	"command-dispatcher/internal/routes/users"
 	"embed"
 	"io/fs"
@@ -51,6 +52,7 @@ func Init() {
 	// Routes registration
 	users.Register(api)
 	auth.Register(api)
+	command.Register(api)
 
 	// Create a sub-filesystem for the "web" directory
 	contentStatic, err := fs.Sub(static, "web")

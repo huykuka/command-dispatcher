@@ -68,7 +68,7 @@ services:
       mosquitto -c /mosquitto/config/mosquitto.conf"
 
   redis:
-    image: redis:alpine
+    image: redis
     container_name: redis
     ports:
       - "6379:6379"
