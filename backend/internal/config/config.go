@@ -9,7 +9,7 @@ import (
 )
 
 var mqttCfg = _mqtt.MQTTConfig{
-	Broker:    "tcp://host.docker.internal:1883",
+	Broker:    "tcp://mqtt:1883",
 	ClientID:  fmt.Sprintf(rand.Text(), "-backend"),
 	Username:  "",
 	Password:  "",

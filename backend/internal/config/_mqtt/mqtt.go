@@ -37,8 +37,10 @@ func getMQTTClient(cfg MQTTConfig) *MQTTClient {
 		opts.SetUsername(cfg.Username)
 		opts.SetPassword(cfg.Password)
 		opts.SetCleanSession(cfg.CleanSess)
+		opts.ResumeSubs = true
 		opts.KeepAlive = 60
 		opts.AutoReconnect = true
+		opts.ConnectRetry = true
 		opts.SetConnectionNotificationHandler(func(client mqtt.Client, notification mqtt.ConnectionNotification) {
 			switch n := notification.(type) {
 			case mqtt.ConnectionNotificationConnected:

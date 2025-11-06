@@ -3,7 +3,7 @@ package _queue
 import "github.com/hibiken/asynq"
 
 func Init() {
-	redisAddress := "127.0.0.1:6379"
+	redisAddress := "redis:6379"
 
 	// Initialize Queue Client and Server
 	InitQueueClient(asynq.RedisClientOpt{Addr: redisAddress})

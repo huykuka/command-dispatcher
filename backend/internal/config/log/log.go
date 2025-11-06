@@ -2,6 +2,7 @@ package log
 
 import (
 	"os"
+	"path/filepath"
 	"time"
 
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
@@ -10,36 +11,37 @@ import (
 )
 
 func Init() {
-	env := os.Getenv("ENV")
+	// Make sure log folder exists
+	path := os.ExpandEnv("$HOME/logs/go.log")
+	os.MkdirAll(filepath.Dir(path), 0755)
+
 	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp:    true, // Enables full timestamps
+		FullTimestamp:    true,
 		DisableTimestamp: false,
 		PadLevelText:     true,
 	})
 
-	path := "/var/log/go.log"
-
-	writer, _ := rotatelogs.New(
+	writer, err := rotatelogs.New(
 		path+".%Y%m%d%H%M",
 		rotatelogs.WithLinkName(path),
-		rotatelogs.WithMaxAge(time.Duration(86400)*time.Second),
-		rotatelogs.WithRotationTime(time.Duration(604800)*time.Second),
+		rotatelogs.WithMaxAge(24*time.Hour),
+		rotatelogs.WithRotationTime(7*24*time.Hour),
 	)
+	if err != nil {
+		log.Fatalf("Failed to create log writer: %v", err)
+	}
 
 	log.AddHook(lfshook.NewHook(
 		lfshook.WriterMap{
 			log.InfoLevel:  writer,
 			log.ErrorLevel: writer,
+			log.WarnLevel:  writer,
+			log.DebugLevel: writer,
 		},
 		&log.JSONFormatter{},
 	))
 
-	if env == "dev" {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.ErrorLevel)
-	}
-
-	// Log to stdout for now to verify output
+	// Print logs to stdout too
 	log.SetOutput(os.Stdout)
+	log.SetLevel(log.InfoLevel)
 }

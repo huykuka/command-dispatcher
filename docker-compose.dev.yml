@@ -1,82 +1,82 @@
 services:
-  # frontend:
-  #   build:
-  #     context: frontend
-  #     dockerfile: docker/dev/Dockerfile
-  #   container_name: frontend
-  #   command: npm run start
-  #   restart: unless-stopped
-  #   environment:
-  #     - TERM=xterm-256color
-  #   develop:
-  #     watch:
-  #       - action: sync
-  #         path: ./frontend
-  #         target: /app
-  #         ignore:
-  #           - node_modules/
-  #           - docker/
-  #           - dist/
-  #           - .nx/
-  #       - action: rebuild
-  #         path: frontend/package.json
-  #       - action: rebuild
-  #         path: frontend/package-lock.json
-  #   ports:
-  #     - "4200:4200"
-  #   networks:
-  #     - app_network
-  backend:
-    build:
-      context: backend
-      dockerfile: docker/dev/Dockerfile
-    command: air
-    container_name: backend
-    develop:
-      watch:
-        - action: sync
-          path: ./backend
-          target: /app
-          ignore:
-            - bin/
-            - tmp/
-        - action: rebuild
-          path: backend/go.mod
-        - action: rebuild
-          path: backend/docker/dev/Dockerfile
-    restart: unless-stopped
-    environment:
-      - ENV=dev
-      - PORT=${APP_PORT:-3000}
-      - HASH_JWT_KEY=9989258716
-    ports:
-      - "8080:${APP_PORT:-3000}"
+    # frontend:
+    #   build:
+    #     context: frontend
+    #     dockerfile: docker/dev/Dockerfile
+    #   container_name: frontend
+    #   command: npm run start
+    #   restart: unless-stopped
+    #   environment:
+    #     - TERM=xterm-256color
+    #   develop:
+    #     watch:
+    #       - action: sync
+    #         path: ./frontend
+    #         target: /app
+    #         ignore:
+    #           - node_modules/
+    #           - docker/
+    #           - dist/
+    #           - .nx/
+    #       - action: rebuild
+    #         path: frontend/package.json
+    #       - action: rebuild
+    #         path: frontend/package-lock.json
+    #   ports:
+    #     - "4200:4200"
+    #   networks:
+    #     - app_network
+    backend:
+        build:
+            context: backend
+            dockerfile: docker/dev/Dockerfile
+        command: air
+        container_name: backend
+        develop:
+            watch:
+                - action: sync
+                  path: ./backend
+                  target: /app
+                  ignore:
+                      - bin/
+                      - tmp/
+                - action: rebuild
+                  path: backend/go.mod
+                - action: rebuild
+                  path: backend/docker/dev/Dockerfile
+        restart: unless-stopped
+        environment:
+            - ENV=dev
+            - PORT=${APP_PORT:-3000}
+            - HASH_JWT_KEY=9989258716
+        ports:
+            - "8080:${APP_PORT:-3000}"
 
-  mqtt-broker:
-    image: eclipse-mosquitto
-    container_name: mqtt-broker
-    ports:
-      - "1883:1883"
-      - "9001:9001"
-    volumes:
-      - mosquitto_data:/mosquitto/data
-    restart: unless-stopped
-    command: sh -c "
-      mkdir -p /mosquitto/config &&
-      echo 'listener 1883' > /mosquitto/config/mosquitto.conf &&
-      echo 'allow_anonymous true' >> /mosquitto/config/mosquitto.conf &&
-      mosquitto -c /mosquitto/config/mosquitto.conf"
+    mqtt:
+        image: eclipse-mosquitto
+        container_name: mqtt-broker
+        ports:
+            - "1883:1883"
+            - "9001:9001"
+        volumes:
+            - mosquitto_data:/mosquitto/data
+        restart: unless-stopped
+        command: sh -c "
+            mkdir -p /mosquitto/config &&
+            echo 'listener 1883' > /mosquitto/config/mosquitto.conf &&
+            echo 'allow_anonymous true' >> /mosquitto/config/mosquitto.conf &&
+            mosquitto -c /mosquitto/config/mosquitto.conf"
 
-  redis:
-    image: redis
-    container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    restart: unless-stopped
+    redis:
+        image: redis
+        container_name: redis
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis-data:/data
+        restart: unless-stopped
 
 volumes:
-  mosquitto_data:
-  mosquitto_log:
-  redis-data:
+    mosquitto_data:
+    mosquitto_log:
+    redis-data:

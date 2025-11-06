@@ -2,7 +2,8 @@ package device
 
 import (
 	"command-dispatcher/internal/config/_mqtt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )

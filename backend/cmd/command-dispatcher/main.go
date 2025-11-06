@@ -20,7 +20,7 @@ func main() {
 		log.Println("Starting HTTP routes...")
 		routes.Init() // Initialize and start HTTP routes
 	}()
-	////
+	//
 	go func() {
 		defer wg.Done()
 		log.Println("Starting MQTT subscribers...")
@@ -36,3 +36,4 @@ func main() {
 
 	log.Println("Application stopped.")
 }
+
