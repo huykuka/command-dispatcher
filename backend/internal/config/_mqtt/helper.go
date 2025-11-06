@@ -19,7 +19,7 @@ func Init(cfg MQTTConfig) *MQTTClient {
 		initDone = true
 		log.Printf("MQTT global config initialized: broker=%s, clientID=%s", cfg.Broker, cfg.ClientID)
 	})
-	return GetMQTTClient(cfg)
+	return getMQTTClient(cfg)
 }
 
 // GetClient returns the singleton MQTT client using the global configuration.
@@ -28,7 +28,7 @@ func GetClient() *MQTTClient {
 	if !initDone {
 		log.Fatal("MQTT client not initialized. Call mqtt.InitGlobal() first in your main.go")
 	}
-	return GetMQTTClient(globalConfig)
+	return getMQTTClient(globalConfig)
 }
 
 // IsInitialized returns true if InitGlobal has been called.

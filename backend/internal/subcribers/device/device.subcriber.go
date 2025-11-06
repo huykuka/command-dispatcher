@@ -13,8 +13,6 @@ func Register() {
 
 	// Use MQTT single-level wildcard `+`
 	mqttClient.Subscribe("devices/+/status", func(c mqtt.Client, m mqtt.Message) {
-
-		// Validated payload - handle accordingly
 		// TODO: dispatch to service, update DB, etc.
 	})
 

@@ -29,7 +29,7 @@ var (
 
 // GetMQTTClient returns the singleton MQTT client instance.
 // It initializes the connection only once and reuses it for all subsequent calls.
-func GetMQTTClient(cfg MQTTConfig) *MQTTClient {
+func getMQTTClient(cfg MQTTConfig) *MQTTClient {
 	once.Do(func() {
 		opts := mqtt.NewClientOptions()
 		opts.AddBroker(cfg.Broker)
@@ -37,6 +37,8 @@ func GetMQTTClient(cfg MQTTConfig) *MQTTClient {
 		opts.SetUsername(cfg.Username)
 		opts.SetPassword(cfg.Password)
 		opts.SetCleanSession(cfg.CleanSess)
+		opts.KeepAlive = 60
+		opts.AutoReconnect = true
 		opts.SetConnectionNotificationHandler(func(client mqtt.Client, notification mqtt.ConnectionNotification) {
 			switch n := notification.(type) {
 			case mqtt.ConnectionNotificationConnected:

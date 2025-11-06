@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/hibiken/asynq"
 	log "github.com/sirupsen/logrus"
 )
@@ -45,24 +46,58 @@ func (cw *CommandWorker) Generate(dto models.CommandCreateDTO) (*asynq.Task, err
 
 // Process executes the queued command.
 func (*CommandWorker) Process(ctx context.Context, t *asynq.Task) error {
+	log.Println("Executing command task...", string(t.Payload()))
 	var p models.CommandCreateDTO
+
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
-
-	log.Infof("Processing command for deviceId=%s type=%s", p.DeviceID, p.Type)
 
 	// Publish the original task payload to MQTT (device-specific topic)
 	if !_mqtt.IsInitialized() {
 		return fmt.Errorf("mqtt client not initialized")
 	}
 
-	topic := "commands/" + p.DeviceID + "/dispatch"
+	mqttClient := _mqtt.GetClient()
 
-	if err := _mqtt.GetClient().Publish(topic, 2, false, t.Payload()); err != nil {
+	disPatchTopic := "commands/" + p.DeviceID + "/dispatch"
+	completeTopic := "commands/" + p.DeviceID + "/complete"
+	acknowledgeTopic := "commands/" + p.DeviceID + "/acknowledge"
+
+	ackCh := make(chan struct{})
+	completeCh := make(chan struct{})
+
+	mqttClient.Subscribe(acknowledgeTopic, func(client mqtt.Client, msg mqtt.Message) {
+		completeCh <- struct{}{}
+	}, 2)
+	defer mqttClient.Unsubscribe(acknowledgeTopic)
+
+	if err := mqttClient.Publish(disPatchTopic, 2, false, t.Payload()); err != nil {
 		return fmt.Errorf("mqtt publish failed: %w", err)
 	}
 
-	log.Infof("Published command to MQTT topic=%s deviceId=%s type=%s", topic, p.DeviceID, p.Type)
+	select {
+	case <-ackCh:
+		// Acknowledgment received
+		log.Infof("Command acknowledged by device %s", p.DeviceID)
+	case <-time.After(5 * time.Second):
+		log.Infof("Command acknowledgment timed out by device %s", p.DeviceID)
+		return nil
+	}
+
+	mqttClient.Subscribe(completeTopic, func(client mqtt.Client, msg mqtt.Message) {
+		//fmt.Println(string(msg.Payload()))
+		ackCh <- struct{}{}
+	}, 2)
+	defer mqttClient.Unsubscribe(completeTopic)
+
+	//select {
+	//case <-completeCh:
+	//	// Acknowledgment received
+	//	log.Infof("Command completed by device %s", p.DeviceID)
+	//case <-time.After(5 * time.Second):
+	//	log.Infof("Command timed out by device %s", p.DeviceID)
+	//}
+
 	return nil
 }

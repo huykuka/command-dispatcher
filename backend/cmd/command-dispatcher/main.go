@@ -11,7 +11,7 @@ import (
 
 func main() {
 	config.Init() // Initialize configuration
-	// Start Asynq server in a goroutine
+	//// Start Asynq server in a goroutine
 	var wg sync.WaitGroup
 	wg.Add(3) // Now waiting for 3 goroutines: HTTP server, MQTT subscribers, and Asynq server
 
@@ -20,13 +20,13 @@ func main() {
 		log.Println("Starting HTTP routes...")
 		routes.Init() // Initialize and start HTTP routes
 	}()
-
+	////
 	go func() {
 		defer wg.Done()
 		log.Println("Starting MQTT subscribers...")
 		subcribers.Init() // Initialize and start MQTT subscribers
 	}()
-
+	//
 	go func() {
 		defer wg.Done()
 		log.Println("Starting queue worker...")

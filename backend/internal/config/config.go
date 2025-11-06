@@ -3,14 +3,14 @@ package config
 import (
 	"command-dispatcher/internal/config/_mqtt"
 	"command-dispatcher/internal/config/_queue"
-	"command-dispatcher/internal/config/environments"
 	"command-dispatcher/internal/config/log"
 	"crypto/rand"
+	"fmt"
 )
 
 var mqttCfg = _mqtt.MQTTConfig{
 	Broker:    "tcp://host.docker.internal:1883",
-	ClientID:  rand.Text(),
+	ClientID:  fmt.Sprintf(rand.Text(), "-backend"),
 	Username:  "",
 	Password:  "",
 	CleanSess: true,
@@ -19,7 +19,7 @@ var mqttCfg = _mqtt.MQTTConfig{
 
 func Init() {
 	log.Init()
-	environments.Init()
+	//environments.Init()?
 	_mqtt.Init(mqttCfg)
 	_queue.Init()
 }
