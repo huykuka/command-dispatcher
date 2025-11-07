@@ -30,7 +30,7 @@ type CommandConfig struct {
 	CommandType           string `json:"commandType" gorm:"not null"` // e.g., "rpc", "deviceData", "configuration"
 	IsAcknowledgeRequired bool   `json:"isAcknowledgeRequired" gorm:"default:false"`
 	PayloadSchema         string `json:"payloadSchema" gorm:"default:'{}'"` // JSON schema for validating command arguments/payload
-	AknowlegmentTimeout   int    `json:"acknowledgementTimeout" gorm:"default:60"`
+	AcknowlegmentTimeout  int    `json:"acknowledgementTimeout" gorm:"default:60"`
 	CompletionTimeout     int    `json:"completionTimeout" gorm:"default:60"`
 }
 

@@ -9,6 +9,21 @@ import (
 	"sync"
 )
 
+// @title Command Dispatcher API
+// @version 1.0
+// @description API for managing command configurations and executions
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.email support@commanddispatcher.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:3000
+// @BasePath /api
+// @schemes http https
+
 func main() {
 	config.Init() // Initialize configuration
 	//// Start Asynq server in a goroutine

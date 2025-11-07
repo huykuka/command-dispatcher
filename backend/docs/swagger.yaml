@@ -1,0 +1,228 @@
+basePath: /api
+definitions:
+  db.CommandConfig:
+    properties:
+      acknowledgementTimeout:
+        type: integer
+      commandType:
+        description: e.g., "rpc", "deviceData", "configuration"
+        type: string
+      completionTimeout:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      isAcknowledgeRequired:
+        type: boolean
+      name:
+        type: string
+      payloadSchema:
+        description: JSON schema for validating command arguments/payload
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.CommandConfigCreateDTO:
+    properties:
+      acknowledgementTimeout:
+        type: integer
+      commandType:
+        type: string
+      completionTimeout:
+        type: integer
+      description:
+        type: string
+      isAcknowledgeRequired:
+        type: boolean
+      name:
+        type: string
+      payloadSchema:
+        type: string
+    required:
+      - commandType
+      - name
+    type: object
+  models.CommandConfigUpdateDTO:
+    properties:
+      acknowledgementTimeout:
+        type: integer
+      commandType:
+        type: string
+      completionTimeout:
+        type: integer
+      description:
+        type: string
+      isAcknowledgeRequired:
+        type: boolean
+      name:
+        type: string
+      payloadSchema:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: support@commanddispatcher.io
+    name: API Support
+  description: API for managing command configurations and executions
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Command Dispatcher API
+  version: "1.0"
+paths:
+  /command:
+    get:
+      description: Retrieve a list of all command configurations
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.CommandConfig'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all command configurations
+      tags:
+        - commands
+    post:
+      consumes:
+        - application/json
+      description: Create a new command configuration with the provided details
+      parameters:
+        - description: Command Config
+          in: body
+          name: command
+          required: true
+          schema:
+            $ref: '#/definitions/models.CommandConfigCreateDTO'
+      produces:
+        - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/db.CommandConfig'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new command configuration
+      tags:
+        - commands
+  /command/{id}:
+    delete:
+      description: Delete a command configuration by ID
+      parameters:
+        - description: Command Config ID
+          in: path
+          name: id
+          required: true
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete command configuration
+      tags:
+        - commands
+    get:
+      description: Retrieve a specific command configuration by its ID
+      parameters:
+        - description: Command Config ID
+          in: path
+          name: id
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.CommandConfig'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get command configuration by ID
+      tags:
+        - commands
+    patch:
+      consumes:
+        - application/json
+      description: Update an existing command configuration with partial data
+      parameters:
+        - description: Command Config ID
+          in: path
+          name: id
+          required: true
+          type: string
+        - description: Command Config Update
+          in: body
+          name: command
+          required: true
+          schema:
+            $ref: '#/definitions/models.CommandConfigUpdateDTO'
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.CommandConfig'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update command configuration
+      tags:
+        - commands
+schemes:
+  - http
+  - https
+swagger: "2.0"

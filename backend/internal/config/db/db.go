@@ -11,7 +11,7 @@ func Init() {
 	dsn := "host=postgres user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 
 	var err error
-	Handler, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	Handler, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}

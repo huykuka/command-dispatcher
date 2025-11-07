@@ -51,6 +51,7 @@ services:
             - HASH_JWT_KEY=9989258716
         ports:
             - "8080:${APP_PORT:-3000}"
+            - "8081:8081"
 
     mqtt:
         image: eclipse-mosquitto

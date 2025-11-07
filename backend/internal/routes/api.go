@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	ginlogrus "github.com/toorop/gin-logrus"
+
+	_ "command-dispatcher/docs" // Import generated docs
 )
 
 // Embed the web directory
@@ -38,6 +40,8 @@ func Init() {
 	// Middleware registration
 	r.Use(ginlogrus.Logger(log.StandardLogger()), gin.Recovery())
 	r.Use(interceptors.JsonApiInterceptor())
+
+	//r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Serving API
 	api := r.Group("/api")

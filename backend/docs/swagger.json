@@ -1,0 +1,337 @@
+{
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "API for managing command configurations and executions",
+    "title": "Command Dispatcher API",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "name": "API Support",
+      "email": "support@commanddispatcher.io"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0"
+  },
+  "host": "localhost:3000",
+  "basePath": "/api",
+  "paths": {
+    "/command": {
+      "get": {
+        "description": "Retrieve a list of all command configurations",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "commands"
+        ],
+        "summary": "Get all command configurations",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/db.CommandConfig"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new command configuration with the provided details",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "commands"
+        ],
+        "summary": "Create a new command configuration",
+        "parameters": [
+          {
+            "description": "Command Config",
+            "name": "command",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CommandConfigCreateDTO"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/db.CommandConfig"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    },
+    "/command/{id}": {
+      "get": {
+        "description": "Retrieve a specific command configuration by its ID",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "commands"
+        ],
+        "summary": "Get command configuration by ID",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Command Config ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/db.CommandConfig"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a command configuration by ID",
+        "tags": [
+          "commands"
+        ],
+        "summary": "Delete command configuration",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Command Config ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "patch": {
+        "description": "Update an existing command configuration with partial data",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "commands"
+        ],
+        "summary": "Update command configuration",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Command Config ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Command Config Update",
+            "name": "command",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.CommandConfigUpdateDTO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/db.CommandConfig"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "db.CommandConfig": {
+      "type": "object",
+      "properties": {
+        "acknowledgementTimeout": {
+          "type": "integer"
+        },
+        "commandType": {
+          "description": "e.g., \"rpc\", \"deviceData\", \"configuration\"",
+          "type": "string"
+        },
+        "completionTimeout": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "deletedAt": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "isAcknowledgeRequired": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "payloadSchema": {
+          "description": "JSON schema for validating command arguments/payload",
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      }
+    },
+    "models.CommandConfigCreateDTO": {
+      "type": "object",
+      "required": [
+        "commandType",
+        "name"
+      ],
+      "properties": {
+        "acknowledgementTimeout": {
+          "type": "integer"
+        },
+        "commandType": {
+          "type": "string"
+        },
+        "completionTimeout": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "isAcknowledgeRequired": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "payloadSchema": {
+          "type": "string"
+        }
+      }
+    },
+    "models.CommandConfigUpdateDTO": {
+      "type": "object",
+      "properties": {
+        "acknowledgementTimeout": {
+          "type": "integer"
+        },
+        "commandType": {
+          "type": "string"
+        },
+        "completionTimeout": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "isAcknowledgeRequired": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "payloadSchema": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
