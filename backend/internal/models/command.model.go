@@ -6,3 +6,9 @@ type CommandCreateDTO struct {
 	Type        string              `json:"type" validate:"required"`
 	Parameters  []map[string]string `json:"parameters"`
 }
+
+type CommandUpdateDTO struct {
+	Description string              `json:"description"`
+	Type        string              `json:"type" validate:"required"`
+	Parameters  []map[string]string `json:"parameters"`
+}

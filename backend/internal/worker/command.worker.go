@@ -14,17 +14,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var mqttClient = _mqtt.GetClient()
-
-// TaskWorker enforces all workers to implement Generate and Process plus expose a JobName.
-type TaskWorker interface {
-	Generate(models.CommandCreateDTO) (*asynq.Task, error)
-	Process(context.Context, *asynq.Task) error
-	JobName() string
-}
-
 type CommandWorker struct {
 	jobName string
+}
+
+// Define a struct that includes the original DTO and the TaskID
+type commandPayload struct {
+	models.CommandCreateDTO
+	TaskID string `json:"taskId"`
 }
 
 func NewCommandWorker(jobName string) *CommandWorker {
@@ -60,61 +57,84 @@ func (*CommandWorker) Process(ctx context.Context, t *asynq.Task) error {
 	}
 	taskId := t.ResultWriter().TaskID()
 
-	publishCommand(p.DeviceID, t.Payload())
+	log.Infof("Executing command for device %s, task %s", p.DeviceID, taskId)
 
-	if err := waitForAcknowledgement(ctx, p.DeviceID); err != nil {
+	publishCommand(p.DeviceID, taskId, t.Payload())
+
+	if err := waitForAcknowledgement(ctx, p.DeviceID, taskId); err != nil {
 		return err
 	}
 
-	if err := waitForCompletion(ctx, p.DeviceID); err != nil {
+	if err := waitForCompletion(ctx, p.DeviceID, taskId); err != nil {
 		return err
 	}
 
-	log.Infof("Command completed by device %s %s", p.DeviceID, taskId)
-
+	log.Infof("Finished processing command for device %s, task %s", p.DeviceID, taskId)
 	return nil
 }
 
 // publishCommand publishes the command payload to the specified dispatch topic.
-func publishCommand(deviceID string, payload []byte) {
-	disPatchTopic := "device/" + deviceID + "/dispatch"
-	mqttClient.Publish(disPatchTopic, 2, false, payload)
+func publishCommand(deviceID, taskId string, originalPayload []byte) {
+	dispatchTopic := fmt.Sprintf("device/%s/dispatch", deviceID)
+
+	var originalPayloadDTO models.CommandCreateDTO
+	if err := json.Unmarshal(originalPayload, &originalPayloadDTO); err != nil {
+		log.Errorf("Failed to unmarshal original command payload for device %s, task %s: %v", deviceID, taskId, err)
+		return // Or handle error appropriately
+	}
+
+	payloadWithTaskID := commandPayload{
+		CommandCreateDTO: originalPayloadDTO,
+		TaskID:           taskId,
+	}
+
+	finalPayload, err := json.Marshal(payloadWithTaskID)
+	if err != nil {
+		log.Errorf("Failed to marshal final command payload for device %s, task %s: %v", deviceID, taskId, err)
+		return // Or handle error appropriately
+	}
+
+	_mqtt.GetClient().Publish(dispatchTopic, 2, false, finalPayload)
 }
 
 // waitForAcknowledgement waits for an acknowledgment from the device or times out.
-func waitForAcknowledgement(ctx context.Context, deviceID string) error {
-	acknowledgeTopic := "device/" + deviceID + "/acknowledge"
+func waitForAcknowledgement(ctx context.Context, deviceID, taskId string) error {
+	acknowledgeTopic := fmt.Sprintf("device/%s/acknowledge/%s", deviceID, taskId)
 	ackCh := make(chan struct{})
 
-	mqttClient.Subscribe(acknowledgeTopic, func(client mqtt.Client, msg mqtt.Message) {
+	_mqtt.GetClient().Subscribe(acknowledgeTopic, func(client mqtt.Client, msg mqtt.Message) {
 		ackCh <- struct{}{}
 	}, 2)
-	defer mqttClient.Unsubscribe(acknowledgeTopic) // Ensure unsubscribe happens
+	defer _mqtt.GetClient().Unsubscribe(acknowledgeTopic) // Ensure unsubscribe happens
 
 	select {
 	case <-ackCh:
-		log.Infof("Command acknowledged by device %s", deviceID)
+		log.Infof("Command aknowledged for device %s, task %s", deviceID, taskId)
 		return nil
 	case <-time.After(20 * time.Second):
-		return fmt.Errorf("command acknowledgment timed out by device %s", deviceID)
+		msg := fmt.Sprintf("Command aknowledgment timed out by device %s, task %s", deviceID, taskId)
+		log.Error(msg)
+		return errors.New(msg)
 	}
 }
 
 // waitForCompletion waits for command completion from the device or times out.
-func waitForCompletion(ctx context.Context, deviceID string) error {
-	completeTopic := "device/" + deviceID + "/complete"
+func waitForCompletion(ctx context.Context, deviceID, taskId string) error {
+	completeTopic := fmt.Sprintf("device/%s/complete/%s", deviceID, taskId)
 	completeCh := make(chan struct{})
 
-	mqttClient.Subscribe(completeTopic, func(client mqtt.Client, msg mqtt.Message) {
+	_mqtt.GetClient().Subscribe(completeTopic, func(client mqtt.Client, msg mqtt.Message) {
 		completeCh <- struct{}{}
 	}, 2)
-	defer mqttClient.Unsubscribe(completeTopic) // Ensure unsubscribe happens
+	defer _mqtt.GetClient().Unsubscribe(completeTopic) // Ensure unsubscribe happens
 
 	select {
 	case <-completeCh:
-		log.Infof("Command completed by device %s", deviceID)
+		log.Infof("Command completed for device %s, task %s", deviceID, taskId)
 		return nil
-	case <-time.After(5 * time.Second):
-		return fmt.Errorf("command completion timed out by device %s", deviceID)
+	case <-time.After(5 * time.Second): // TODO: make timeout configurable
+		msg := fmt.Sprintf("Command completion timed out by device %s, task %s", deviceID, taskId)
+		log.Error(msg)
+		return errors.New(msg)
 	}
 }

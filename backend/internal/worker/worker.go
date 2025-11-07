@@ -3,6 +3,7 @@ package worker
 import (
 	"command-dispatcher/internal/config/_queue"
 	"command-dispatcher/internal/models"
+	"context"
 
 	"github.com/hibiken/asynq"
 	log "github.com/sirupsen/logrus"
@@ -12,6 +13,12 @@ import (
 const (
 	TypeCommandExecutionJob = "command:execute"
 )
+
+type TaskWorker interface {
+	Generate(models.CommandCreateDTO) (*asynq.Task, error)
+	Process(context.Context, *asynq.Task) error
+	JobName() string
+}
 
 // commandWorker implements TaskWorker (compile-time assertion)
 var commandWorker TaskWorker = NewCommandWorker(TypeCommandExecutionJob)

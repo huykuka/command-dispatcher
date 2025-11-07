@@ -1,61 +1,118 @@
 package command
 
 import (
-	//"command-dispatcher/internal/config/_queue"
-	//"command-dispatcher/internal/worker"
-	//"fmt"
-
+	"command-dispatcher/internal/config/db"
 	"command-dispatcher/internal/models"
-	"command-dispatcher/internal/worker"
-	"fmt"
+	"command-dispatcher/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
 
-type CommandService struct{}
-
-func NewCommandService() *CommandService {
-	return &CommandService{}
+// CommandService provides command-related business logic.
+type CommandService struct {
+	repo *CommandRepository
 }
 
-func (s *CommandService) add(c *gin.Context) {
-	dto := c.MustGet("Body").(models.CommandCreateDTO)
-	err := worker.EnqueueCommandExecutionTask(dto)
-	if err != nil {
-		fmt.Println("Could not enqueue task: ", err)
+// NewCommandService creates a new CommandService instance.
+func NewCommandService() *CommandService {
+	database := db.GetDB()
+	return &CommandService{repo: NewCommandRepository(database)}
+}
+
+// create handles creating a new command configuration.
+func (s *CommandService) create(c *gin.Context) {
+	
+	dto := c.MustGet("Body").(models.CommandConfigCreateDTO)
+	command := &db.CommandConfig{
+		Name:                   dto.Name,
+		Description:            dto.Description,
+		IsAcknowledgeRequired:  dto.IsAcknowledgeRequired,
+		CommandType:            dto.CommandType,
+		PayloadSchema:          dto.PayloadSchema,
+		AknowlegmentTimeout:    dto.AknowlegmentTimeout,
+		CompletionTimeout:      dto.CompletionTimeout,
+	}
+
+	if err := s.repo.Create(command); err != nil {
+		utils.HandleHTTPError(c, err.Error(), "Create command config failed")
 		return
 	}
+	c.Status(201)
+	utils.SetResponse(c, map[string]any{
+		"id":          command.ID,
+		"name":        command.Name,
+		"description": command.Description,
+	})
 }
 
-func (s *CommandService) remove(c *gin.Context) {
-	// Implement command removal logic here
-
+// getAll retrieves all command configurations.
+func (s *CommandService) getAll(c *gin.Context) {
+	commands, err := s.repo.FindAll()
+	if err != nil {
+		utils.HandleHTTPError(c, err.Error(), "Fetch command configs failed")
+		return
+	}
+	c.Status(200)
+	c.Set("response", commands)
 }
 
-func (s *CommandService) list() {
-	// Implement command listing logic here
-
+// getByID retrieves a single command configuration by its ID.
+func (s *CommandService) getByID(c *gin.Context) {
+	id := c.Param("id")
+	command, err := s.repo.FindByID(id)
+	if err != nil {
+		utils.HandleHTTPError(c, err.Error(), "Fetch command config failed")
+		return
+	}
+	c.Set("response", command)
 }
 
-func (s *CommandService) get(commandID string) {
-	// Implement command retrieval logic here
+// update updates an existing command configuration.
+func (s *CommandService) update(c *gin.Context) {
+	id := c.Param("id")
+	dto := c.MustGet("Body").(models.CommandConfigUpdateDTO)
+	command, err := s.repo.FindByID(id)
+	if err != nil {
+		utils.HandleHTTPError(c, err.Error(), "Fetch command config failed")
+		return
+	}
 
+	// Update fields from DTO
+	if dto.Name != nil {
+		command.Name = *dto.Name
+	}
+	if dto.Description != nil {
+		command.Description = *dto.Description
+	}
+	if dto.CommandType != nil {
+		command.CommandType = *dto.CommandType
+	}
+	if dto.IsAcknowledgeRequired != nil {
+		command.IsAcknowledgeRequired = *dto.IsAcknowledgeRequired
+	}
+	if dto.PayloadSchema != nil {
+		command.PayloadSchema = *dto.PayloadSchema
+	}
+	if dto.AknowlegmentTimeout != nil {
+		command.AknowlegmentTimeout = *dto.AknowlegmentTimeout
+	}
+	if dto.CompletionTimeout != nil {
+		command.CompletionTimeout = *dto.CompletionTimeout
+	}
+
+	if err := s.repo.Update(command); err != nil {
+		utils.HandleHTTPError(c, err.Error(), "Update command config failed")
+		return
+	}
+	c.Set("response", command)
 }
 
-func (s *CommandService) update(commandID string, newCommand string) {
-	// Implement command update logic here
-
-}
-
-func (s *CommandService) execute(commandID string) {
-	// Implement command execution logic here
-
-}
-
-func (s *CommandService) schedule(commandID string, scheduleTime string) {
-	// Implement command scheduling logic here
-
-}
-
-func (s *CommandService) cancel(commandID string) {
+// delete deletes a command configuration.
+func (s *CommandService) delete(c *gin.Context) {
+	id := c.Param("id")
+	if err := s.repo.Delete(id); err != nil {
+		utils.HandleHTTPError(c, err.Error(), "Delete command config failed")
+		return
+	}
+	c.Status(204)
 }

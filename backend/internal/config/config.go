@@ -3,6 +3,7 @@ package config
 import (
 	"command-dispatcher/internal/config/_mqtt"
 	"command-dispatcher/internal/config/_queue"
+	"command-dispatcher/internal/config/db"
 	"command-dispatcher/internal/config/log"
 	"crypto/rand"
 	"fmt"
@@ -19,6 +20,7 @@ var mqttCfg = _mqtt.MQTTConfig{
 
 func Init() {
 	log.Init()
+	db.Init()
 	//environments.Init()?
 	_mqtt.Init(mqttCfg)
 	_queue.Init()

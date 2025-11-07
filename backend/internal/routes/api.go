@@ -2,7 +2,6 @@ package routes
 
 import (
 	"command-dispatcher/internal/core/interceptors"
-	"command-dispatcher/internal/routes/auth"
 	"command-dispatcher/internal/routes/command"
 	"command-dispatcher/internal/routes/users"
 	"os"
@@ -45,9 +44,7 @@ func Init() {
 
 	// Routes registration
 	users.Register(api)
-	auth.Register(api)
 	command.Register(api)
-
 
 	// Start the Server
 	log.Printf("Server is running on port: %s", port)

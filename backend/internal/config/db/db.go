@@ -1,22 +1,22 @@
 package db
 
 import (
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 var Handler *gorm.DB
 
 func Init() {
+	dsn := "host=postgres user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+
 	var err error
-	Handler, err = gorm.Open(sqlite.Open("app.db"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Silent),
-	})
+	Handler, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
-	err = Handler.AutoMigrate(&Setting{}, &BackUp{}, &History{}, &User{})
+
+	err = Handler.AutoMigrate(&CommandConfig{}, &CommandExecution{})
 
 	if err != nil {
 		return
@@ -30,6 +30,6 @@ func GetDB() *gorm.DB {
 }
 
 func seedDB(handler *gorm.DB) {
-	seedSetting(handler)
-	seedUser(handler)
+	// seedSetting(handler)
+	// seedUser(handler)
 }

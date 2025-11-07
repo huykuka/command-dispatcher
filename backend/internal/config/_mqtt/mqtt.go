@@ -121,7 +121,6 @@ func (m *MQTTClient) Subscribe(topic string, handler mqtt.MessageHandler, qos ..
 		return token.Error()
 	}
 
-	log.Printf("Subscribed to topic: %s (QoS %d)", topic, qosLevel)
 	return nil
 }
 
@@ -138,8 +137,6 @@ func (m *MQTTClient) Unsubscribe(topics ...string) error {
 		log.Printf("Failed to unsubscribe from topics: %v", token.Error())
 		return token.Error()
 	}
-
-	log.Printf("Unsubscribed from topics: %v", topics)
 	return nil
 }
 

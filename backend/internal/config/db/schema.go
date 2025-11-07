@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -9,10 +10,10 @@ import (
 
 // Base contains common columns for all tables.
 type Base struct {
-	ID        string     `json:"id";gorm:"type:uuid;primary_key;"`
-	CreatedAt time.Time  `json:"createdAt"`
-	UpdatedAt time.Time  `json:"updatedAt"`
-	DeletedAt *time.Time `sql:"index" json:"deletedAt"`
+	ID        string     `json:"id" gorm:"type:uuid;primary_key;"`
+	CreatedAt time.Time  `json:"createdAt" gorm:"autoCreateTime"`
+	UpdatedAt time.Time  `json:"updatedAt" gorm:"autoUpdateTime"`
+	DeletedAt *time.Time `json:"deletedAt" gorm:"index"`
 }
 
 // BeforeCreate will set a UUID rather than numeric ID.
@@ -21,28 +22,27 @@ func (b *Base) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-type User struct {
+// CommandConfig defines the configuration for a specific command.
+type CommandConfig struct {
 	Base
-	Name     string `json:"name"`
-	Email    string `json:"email" gorm:"unique"`
-	Password string `json:"password"`
+	Name                  string `json:"name" gorm:"unique;not null"`
+	Description           string `json:"description"`
+	CommandType           string `json:"commandType" gorm:"not null"` // e.g., "rpc", "deviceData", "configuration"
+	IsAcknowledgeRequired bool   `json:"isAcknowledgeRequired" gorm:"default:false"`
+	PayloadSchema         string `json:"payloadSchema" gorm:"default:'{}'"` // JSON schema for validating command arguments/payload
+	AknowlegmentTimeout   int    `json:"acknowledgementTimeout" gorm:"default:60"`
+	CompletionTimeout     int    `json:"completionTimeout" gorm:"default:60"`
 }
 
-type Setting struct {
+// CommandExecution records the history and status of a command sent to a device.
+type CommandExecution struct {
 	Base
-	Key   string `json:"key" gorm:"unique"`
-	Value string `json:"value"`
-}
-
-type BackUp struct {
-	Base
-	Filename string `json:"filename" gorm:"unique"`
-	POC      string `json:"poc"`
-}
-
-type History struct {
-	Base
-	Type   string `json:"type"`
-	Status string `json:"status" gorm:"index"`
-	Detail string `json:"detail"`
+	DeviceID             string          `json:"deviceId" gorm:"not null;index"`
+	CommandConfigID      string          `json:"commandConfigId" gorm:"type:uuid;not null"`
+	CommandConfig        CommandConfig   `json:"-" gorm:"foreignKey:CommandConfigID"` // Belongs-to relationship
+	Status               string          `json:"status" gorm:"index"`                 // e.g., "PENDING", "SENT", "ACKNOWLEDGED", "COMPLETED", "FAILED"
+	IssuedAt             time.Time       `json:"issuedAt" gorm:"autoCreateTime"`
+	CompletedAt          *time.Time      `json:"completedAt"`
+	ExecutionHistory     json.RawMessage `json:"executionHistory" gorm:"type:jsonb"` // Store execution events as JSON
+	CommandExecutionTime time.Time       `json:"commandExecutionTime"`
 }
